@@ -36,8 +36,8 @@ export class AuthUserService {
     );
 
     if (passwordHash !== user.password) {
-      throw new Error("Email ou senha incorretos");
-    }
+    throw new Error("Email ou senha incorretos");
+    } 
 
     return {
       id: user.id,
