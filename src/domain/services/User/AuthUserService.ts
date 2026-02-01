@@ -8,7 +8,6 @@ export class AuthUserService {
 
   async execute({ email, password }: AuthRequest): Promise<AuthResponse> {
         
-    // Validação de entrada
     if (!email || typeof email !== 'string') {
       throw new Error("Email é obrigatório");
     }   

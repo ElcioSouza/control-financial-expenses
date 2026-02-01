@@ -10,10 +10,10 @@ export class ListDetailUserController {
       return {
         success: true,
         data: user,
-        message: 'User details retrieved successfully'
+        message: 'Detalhes do usuário recuperados com sucesso'
       };
     } catch (err) {
-      throw new Error("Erro ao buscar detalhes do usuário:")
+      throw new Error("Erro ao buscar detalhes do usuário")
     }
   }
 }
