@@ -10,10 +10,10 @@ export class CreateUserController {
       return {
         success: true,
         data: user,
-        message: 'User created successfully'
+        message: 'Usuário criado com sucesso'
       };
     } catch (err) {
-       throw new Error("Error ao criar usuário")
+       throw new Error("O usuário já existe")
     }
   }
 }

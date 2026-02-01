@@ -24,8 +24,7 @@ export class CreateUserService {
     const userRepository = SQLiteUserRepository.getInstance(dataBase);
     const userExists = await userRepository.findByEmail(email);
     if (userExists) {
-      console.log("usuario ja existe");
-      throw new Error("Usuário ja existe");
+      throw new Error("o usuário já existe");
     }
 
     const passwordHash = await Crypto.digestStringAsync(
