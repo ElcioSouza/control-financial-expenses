@@ -17,7 +17,7 @@ export class DatabaseConnection {
         await DatabaseMigrations.run(DatabaseConnection.instance);
       } catch (error) {
         console.error("Erro ao conectar ao banco de dados:", error);
-        throw new Error("Failed to connect to database");
+        throw new Error("Erro ao conectar ao banco de dados");
       }
     }
     return DatabaseConnection.instance;
@@ -34,7 +34,7 @@ export class DatabaseConnection {
         DatabaseConnection.instance = null;
       } catch (error) {
         console.error("Erro ao fechar conexão:", error);
-        throw new Error("Failed to close database connection");
+        throw new Error("Erro ao fechar conexão");
       }
     }
   }
