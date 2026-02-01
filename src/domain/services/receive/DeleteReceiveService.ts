@@ -1,40 +1,38 @@
-import { IReceiveRepository } from "../../repositories/IReceiveRepository";
-import { IUserRepository } from "../../repositories/IUserRepository";
 import { DeleteReceiveRequest, DeleteReceiveResponse } from "../../dto/receive/DeleteReceiveDTO";
+import { DatabaseConnection } from "../../../database/DatabaseConnection";
+import { SQLiteUserRepository } from "../../../database/repositories/SQLiteUserRepository";
+import { SQLiteReceiveRepository } from "../../../database/repositories/SQLiteReceiveRepository";
 
 export class DeleteReceiveService {
-  constructor(
-    private receiveRepository: IReceiveRepository,
-    private userRepository: IUserRepository
-  ) {}
 
   async execute({ item_id, user_id }: DeleteReceiveRequest): Promise<DeleteReceiveResponse> {
 
     if (!item_id) {
-      throw new Error("O ID do item é obrigatório");
+      throw new Error("ID do item é obrigatório");
     }
 
     if (!user_id) {
-      throw new Error("O ID do usuário é obrigatório");
+      throw new Error("ID do usuário é obrigatório");
     }
-
-    const receive = await this.receiveRepository.findById(item_id);
+   const dataBase = await DatabaseConnection.getInstance();
+   const receiveRepository = SQLiteReceiveRepository.getInstance(dataBase)
+    const receive = await receiveRepository.findById(item_id);
 
     if (!receive) {
-      throw new Error("Receber não encontrado");
+      throw new Error("Receita não encontrada");
     }
 
     if (receive.user_id !== user_id) {
       throw new Error("Não autorizado: Este item não pertence ao usuário");
     }
-
-    const user = await this.userRepository.findById(user_id);
+    const userRepository = SQLiteUserRepository.getInstance(dataBase)
+    const user = await userRepository.findById(user_id);
 
     if (!user) {
       throw new Error("Usuário não encontrado");
     }
-
-    await this.receiveRepository.delete(item_id);
+   
+    await receiveRepository.delete(item_id);
 
     let newBalance: number;
     if (receive.type === "despesa") {
@@ -43,11 +41,11 @@ export class DeleteReceiveService {
       newBalance = user.balance - receive.value;
     }
 
-    await this.userRepository.updateBalance(user_id, newBalance);
+    await userRepository.updateBalance(user_id, newBalance);
 
     return { 
       status: 'success',
-      message: 'Receber excluído com sucesso'
+      message: 'receita deletado com sucesso'
     };
   }
 }

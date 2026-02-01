@@ -1,4 +1,4 @@
 export interface ListUserBalanceRequest {
   user_id: string;
-  date: string;
+  date?: string;
 }

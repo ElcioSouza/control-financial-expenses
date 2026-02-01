@@ -1,36 +1,31 @@
 import { AuthUserService } from '../../domain/services/User/AuthUserService';
 import { AuthRequest } from '../../domain/dto/user/AuthUserDTO';
-import { DatabaseConnection } from '../../database/DatabaseConnection';
-import { SQLiteUserRepository } from '../../database/repositories/SQLiteUserRepository';
+
+interface AuthControllerResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+  data?: {
+    id: string;
+    name: string;
+    email: string;
+    balance: number;
+  };
+}
 
 export class AuthUserController {
-  async handle(data: AuthRequest) {
-    try {
-      const db = await DatabaseConnection.getInstance();
-      const userRepository = SQLiteUserRepository.getInstance(db);
-
-      const authUserService = new AuthUserService(userRepository);
-      const auth = await authUserService.execute(data);
   
-
-      if (!auth || !auth.id || !auth.email) {
-        return {
-          success: false,
-          error: 'Dados de autenticação inválidos'
-        };
-      }
-
+  async handle(data: AuthRequest): Promise<AuthControllerResponse> {
+    try {
+      const authUserService = new AuthUserService();
+      const user = await authUserService.execute(data);
       return {
         success: true,
-        data: auth,
-        message: 'User authenticated successfully'
+        message: 'Usuário autentificado com sucesso',
+        data: user
       };
-
     } catch (err) {
-      return {
-        success: false,
-        error: err.message || 'Email ou senha incorretos'
-      };
+      throw new Error("Email ou senha incorretos")
     }
   }
 }

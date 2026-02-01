@@ -1,22 +1,21 @@
-import { IUserRepository } from '../../repositories/IUserRepository';
-import { IReceiveRepository } from '../../repositories/IReceiveRepository';
+import { SQLiteUserRepository } from '../../../database/repositories/SQLiteUserRepository';
+import { SQLiteReceiveRepository } from '../../../database//repositories/SQLiteReceiveRepository';
 import { ListUserBalanceRequest } from '../../dto/user/ListUserBalanceDTO';
+import { DatabaseConnection } from '../../../database/DatabaseConnection';
 
 export class ListUserBalanceService {
-  constructor(
-    private userRepository: IUserRepository,
-    private receiveRepository: IReceiveRepository
-  ) {}
 
   async execute({ user_id, date }: ListUserBalanceRequest) {
-    const user = await this.userRepository.findById(user_id);
-    
-    
+    const dataBase = await DatabaseConnection.getInstance()
+    const userRepository =  SQLiteUserRepository.getInstance(dataBase) 
+    const user = await userRepository.findById(user_id);
+  
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("Usuário não encontrado");
     }
 
-    const receives = await this.receiveRepository.getByDateRange(user_id, date, date);
+    const receiveRepository = SQLiteReceiveRepository.getInstance(dataBase)
+    const receives = await receiveRepository.getByDateRange(user_id, date, date);
 
     const receitas = receives
       .filter(r => r.type === 'receita')

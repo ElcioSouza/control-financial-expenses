@@ -1,38 +1,37 @@
-import { IReceiveRepository } from "../../repositories/IReceiveRepository";
-import { IUserRepository } from "../../repositories/IUserRepository";
 import { Receive } from "../../models/Receive";
 import { CreateReceiveRequest } from "../../dto/receive/CreateReceiveDTO";
 import * as Crypto from 'expo-crypto';
+import { DatabaseConnection } from "../../../database/DatabaseConnection";
+import { SQLiteUserRepository } from "../../../database/repositories/SQLiteUserRepository";
+import { SQLiteReceiveRepository } from "../../../database/repositories/SQLiteReceiveRepository";
 
 export class CreateReceiveService {
-  constructor(
-    private receiveRepository: IReceiveRepository,
-    private userRepository: IUserRepository
-  ) {}
+
 
   async execute({ description, type, value, date, user_id }: CreateReceiveRequest): Promise<Receive> {
 
     if (!user_id) {
-      throw new Error("O ID do usuário é obrigatório");
+      throw new Error("ID do usuário é obrigatório");
     }
 
     if (!description) {
-      throw new Error("A descrição é obrigatória");
+      throw new Error("Descrição é obrigatória");
     }
 
     if (!value || value <= 0) {
-      throw new Error("O valor deve ser maior que zero");
+      throw new Error("Valor deve ser maior que zero");
     }
 
     if (!type) {
-      throw new Error("O tipo é obrigatório");
+      throw new Error("Tipo é obrigatório");
     }
 
     if (!date) {
-      throw new Error("A data é obrigatória");
+      throw new Error("Data é obrigatória");
     }
-
-    const user = await this.userRepository.findById(user_id);
+    const dataBase = await DatabaseConnection.getInstance();
+    const userRepository = SQLiteUserRepository.getInstance(dataBase);
+    const user = await userRepository.findById(user_id);
 
     if (!user) {
       throw new Error("Usuário não encontrado");
@@ -45,7 +44,7 @@ export class CreateReceiveService {
       newBalance = user.balance - Number(value);
     }
 
-    await this.userRepository.updateBalance(user_id, newBalance);
+    await userRepository.updateBalance(user_id, newBalance);
 
     const newReceive: Receive = {
       id: Crypto.randomUUID(),
@@ -57,8 +56,8 @@ export class CreateReceiveService {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-
-    await this.receiveRepository.create(newReceive);
+    const receiveRepository = SQLiteReceiveRepository.getInstance(dataBase)
+    await receiveRepository.create(newReceive);
 
     return newReceive;
   }

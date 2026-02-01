@@ -1,16 +1,17 @@
-import { IUserRepository } from "../../repositories/IUserRepository";
 import { User } from "../../models/User";
+import { DatabaseConnection } from "../../../database/DatabaseConnection";
+import { SQLiteUserRepository } from "../../../database/repositories/SQLiteUserRepository";
+import { ListUserBalanceRequest } from "../../dto/user/ListUserBalanceDTO";
 
 export class ListDetailUserService {
-  constructor(private userRepository: IUserRepository) {}
-
-  async execute(user_id: string): Promise<User> {
+  async execute({user_id}: ListUserBalanceRequest): Promise<User> {
     
     if (!user_id) {
-      throw new Error("O ID do usuário é obrigatório");
+      throw new Error("ID do usuário é obrigatório");
     }
-
-    const user = await this.userRepository.findById(user_id);
+    const dataBase = await DatabaseConnection.getInstance();
+    const userRepository = SQLiteUserRepository.getInstance(dataBase);
+    const user = await userRepository.findById(user_id);
 
     if (!user) {
       throw new Error("Usuário não encontrado");

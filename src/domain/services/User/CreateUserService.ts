@@ -1,29 +1,31 @@
 import * as Crypto from 'expo-crypto';
-import { IUserRepository } from "../../repositories/IUserRepository";
 import { User } from "../../models/User";
 import { CreateUserRequest } from "../../dto/user/CreateUserDTO";
+import { DatabaseConnection } from '../../../database/DatabaseConnection';
+import { SQLiteUserRepository } from '../../../database/repositories/SQLiteUserRepository';
 
 export class CreateUserService {
-  constructor(private userRepository: IUserRepository) {}
 
   async execute({name, email, password, balance = 0}: CreateUserRequest): Promise<User> {
 
     if (!email || typeof email !== 'string') {
-      throw new Error("O endereço de e-mail é obrigatório e deve ser uma sequência de caracteres");
+      throw new Error("Email é obrigatório e deve ser uma string");
     }
 
     if (!name || typeof name !== 'string') {
-      throw new Error("O nome é obrigatório e deve ser uma string");
+      throw new Error("Nome é obrigatório e deve ser uma string");
     }
 
     if (!password || typeof password !== 'string' || password.length < 1) {
-      throw new Error("É necessário um código de senha, que deve ser uma sequência de caracteres e não pode estar vazia");
+      throw new Error("Senha é obrigatória, deve ser uma string e não pode estar vazia");
     }
-
-    const userExists = await this.userRepository.findByEmail(email);
-
+    
+    const dataBase = await DatabaseConnection.getInstance()
+    const userRepository = SQLiteUserRepository.getInstance(dataBase);
+    const userExists = await userRepository.findByEmail(email);
     if (userExists) {
-      throw new Error("O usuário já existe");
+      console.log("usuario ja existe");
+      throw new Error("Usuário ja existe");
     }
 
     const passwordHash = await Crypto.digestStringAsync(
@@ -43,7 +45,7 @@ export class CreateUserService {
       updated_at: new Date().toISOString()
     };
 
-    await this.userRepository.create(newUser);
+    await userRepository.create(newUser);
 
     return {
       ...newUser,
